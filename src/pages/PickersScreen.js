@@ -1,88 +1,105 @@
 import { collection, getDocs } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { db } from '../firebase/firebaseConfig';
+import { AdminContext } from '../context/adminContext';
 
 const PickersScreen = () => {
-    const [pickersData, setPickersData] = useState([]);
-    const [loading, setLoading] = useState(true); // Loading state
-    const navigate = useNavigate();
+  const [pickersData, setPickersData] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  const { setProfileDetails } = useContext(AdminContext)
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchPickersData = async () => {
-            const pickersCollection = collection(db, 'users'); // Assuming collection name is 'pickers'
-            const querySnapshot = await getDocs(pickersCollection);
+  useEffect(() => {
+    const fetchPickersData = async () => {
+      try {
+        const pickersCollection = collection(db, 'users');
+        const querySnapshot = await getDocs(pickersCollection);
 
-            const pickers = querySnapshot.docs.map((doc) => {
-                const data = doc.data();
-                console.log('data', data.completedOrders)
-                const completedOnTime = data.completedOrders.filter(order => {
-                    // Check if the completion time is <= 1 minute
-                    const time = order.completion_time.split(' ')[0]; // Get minutes
-                    return parseInt(time) <= 1;
-                }).length;
+        const pickers = querySnapshot.docs.map((doc) => {
+          const data = doc.data() || {}; // Ensure data is not null/undefined
+          const completedOrders = data.completedOrders || []; // Fallback to empty array if null/undefined
 
-                return {
-                    mobileNumber: doc.id, // Firebase document ID is the mobile number
-                    name: data.name,
-                    organizationId: data.organization_id,
-                    completedOnTime,
-                    completedLate: data.completedOrders.length - completedOnTime
-                };
-            });
+          const completedOnTime = completedOrders.filter((order) => {
+            const time = order?.completion_time?.split(' ')[0]; // Safely access completion_time
+            return time && parseInt(time) <= 1;
+          }).length;
 
-            setPickersData(pickers);
-            setLoading(false); // Set loading to false after data is fetched
-        };
+          return {
+            mobileNumber: doc.id || 'Unknown', // Fallback for missing doc ID
+            name: data.name || 'Unnamed Picker', // Fallback for missing name
+            organizationId: data.organization_id || 'N/A', // Fallback for missing organizationId
+            completedOnTime,
+            completedLate: completedOrders.length - completedOnTime,
+            password: data.password,
+            completedOrdersCount: data.completedOrders.length,
+            completedOrders: data.completedOrders || []
+          };
+        });
 
-        fetchPickersData();
-    }, []);
-
-    const addPicker = () => {
-        navigate('/add-picker');
+        setPickersData(pickers);
+      } catch (error) {
+        console.error('Error fetching pickers data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const viewProfile = (profileId) => {
-        console.log('View profile clicked for:', profileId);
-        navigate('/view-profile')
-    };
+    fetchPickersData();
+  }, []);
 
-    return (
-        <Container>
-            <Header>
-                <h1>Pickers List</h1>
-                <AddButton onClick={addPicker}>ADD A PICKER</AddButton>
-            </Header>
+  const addPicker = () => {
+    navigate('/add-picker');
+  };
 
-            {loading ? ( // Show loader while loading
-                <Loader>Loading...</Loader>
-            ) : (
-                <Table>
-                    <thead>
-                        <tr>
-                            <Th>Picker Name</Th>
-                            <Th>Orders Completed On Time</Th>
-                            <Th>Orders Completed After Delay</Th>
-                            <Th>Action</Th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {pickersData.map((picker) => (
-                            <tr key={picker.mobileNumber}>
-                                <Td>{picker.name}</Td>
-                                <Td>{picker.completedOnTime}</Td>
-                                <Td>{picker.completedLate}</Td>
-                                <Td>
-                                    <Button onClick={() => viewProfile(picker.mobileNumber)}>View Profile</Button>
-                                </Td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            )}
-        </Container>
+  const viewProfile = (mobileNumber) => {
+    const selectedPicker = pickersData.find(
+      (picker) => picker.mobileNumber === mobileNumber
     );
+    if (selectedPicker) {
+      setProfileDetails(selectedPicker); // Update profile details in context
+      navigate('/view-profile'); // Navigate to profile page
+    }
+  };
+
+  return (
+    <Container>
+      <Header>
+        <h1>Pickers List</h1>
+        <AddButton onClick={addPicker}>ADD A PICKER</AddButton>
+      </Header>
+
+      {loading ? ( // Show loader while loading
+        <Loader>Loading...</Loader>
+      ) : (
+        <Table>
+          <thead>
+            <tr>
+              <Th>Picker Name</Th>
+              <Th>Orders Completed On Time</Th>
+              <Th>Orders Completed After Delay</Th>
+              <Th>Action</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {pickersData?.map((picker) => (
+              <tr key={picker.mobileNumber || Math.random()}>
+                <Td>{picker.name}</Td>
+                <Td>{picker.completedOnTime ?? 0}</Td>
+                <Td>{picker.completedLate ?? 0}</Td>
+                <Td>
+                  <Button onClick={() => viewProfile(picker.mobileNumber)}>
+                    View Profile
+                  </Button>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+    </Container>
+  );
 };
 
 const Container = styled.div`

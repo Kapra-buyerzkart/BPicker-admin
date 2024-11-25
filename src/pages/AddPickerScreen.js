@@ -1,84 +1,110 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';  // Adjust the import if needed
 
 const AddPickerScreen = () => {
-    const [name, setName] = useState('');
-    const [password, setPassword] = useState('');
-    const [organizationId, setOrganizationId] = useState('');
-    const [isLoading, setIsLoading] = useState(false);  // Loading state
-    const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
+  const [mobileNumber, setMobileNumber] = useState(''); // New state for mobile number
+  const [isLoading, setIsLoading] = useState(false);  // Loading state
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);  // Start loading when form is submitted
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true); // Start loading when form is submitted
 
-        // Simulate an API call or async operation
-        setTimeout(() => {
-            console.log({
-                name,
-                password,
-                organizationId,
-            });
+    try {
+      const docRef = doc(db, 'users', mobileNumber);
+      const docSnap = await getDoc(docRef);
 
-            setIsLoading(false);  // Stop loading after submission
+      if (docSnap.exists()) {
+        alert('A picker with this mobile number already exists!');
+        setIsLoading(false); // Stop loading
+        return;
+      }
 
-            // Navigate back to PickersPage after submission
-            navigate('/pickers');
-        }, 2000);  // Simulate a 2-second delay (for demo purposes)
-    };
+      // Create a new document in Firestore with the mobile number as the document ID
+      await setDoc(docRef, {
+        name,
+        password,
+        organization_id: organizationId,
+        completedOrders: [],
+      });
 
-    const handleCancel = () => {
-        setName('');
-        setPassword('');
-        setOrganizationId('');
-    };
+      console.log('Picker added:', { name, password, organizationId, mobileNumber });
 
-    return (
-        <Container>
-            <FormWrapper>
-                <Form onSubmit={handleSubmit}>
-                    <Title>Add a New Picker</Title>
-                    <InputContainer>
-                        <Input
-                            type="text"
-                            placeholder="Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <Input
-                            type="number"
-                            placeholder="Organization ID"
-                            value={organizationId}
-                            onChange={(e) => setOrganizationId(e.target.value)}
-                            required
-                        />
-                    </InputContainer>
-                    <ButtonContainer>
-                        <Button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Saving...' : 'Save Picker'}
-                        </Button>
-                        <CancelButton type="button" onClick={handleCancel}>
-                            Cancel
-                        </CancelButton>
-                    </ButtonContainer>
-                </Form>
-                {isLoading && (
-                    <LoaderContainer>
-                        <Loader />
-                    </LoaderContainer>
-                )}
-            </FormWrapper>
-        </Container>
-    );
+      setIsLoading(false); // Stop loading after submission
+
+      // Navigate back to the PickersPage after submission
+      navigate('/pickers');
+    } catch (error) {
+      console.error('Error adding picker:', error);
+      setIsLoading(false); // Stop loading if there's an error
+    }
+  };
+
+  const handleCancel = () => {
+    setName('');
+    setPassword('');
+    setOrganizationId('');
+    setMobileNumber('');
+  };
+
+  return (
+    <Container>
+      <FormWrapper>
+        <Form onSubmit={handleSubmit}>
+          <Title>Add a New Picker</Title>
+          <InputContainer>
+            <Input
+              type="number"
+              placeholder="Mobile Number"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Input
+              type="number"
+              placeholder="Organization ID"
+              value={organizationId}
+              onChange={(e) => setOrganizationId(e.target.value)}
+              required
+            />
+          </InputContainer>
+          <ButtonContainer>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Picker'}
+            </Button>
+            <CancelButton type="button" onClick={handleCancel}>
+              Cancel
+            </CancelButton>
+          </ButtonContainer>
+        </Form>
+        {/* {isLoading && (
+          <LoaderContainer>
+            <Loader />
+          </LoaderContainer>
+        )} */}
+      </FormWrapper>
+    </Container>
+  );
 };
 
 const Container = styled.div`

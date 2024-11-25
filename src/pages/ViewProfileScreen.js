@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
+import { AdminContext } from '../context/adminContext';
+import { db } from '../firebase/firebaseConfig';
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 
 const ViewProfileScreen = () => {
+    const { profileDetails, setProfileDetails } = useContext(AdminContext);
     const [profile, setProfile] = useState({
         name: 'John Doe',
         phone: '123-456-7890',
@@ -11,11 +16,12 @@ const ViewProfileScreen = () => {
     });
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState(profile);
+    const [editData, setEditData] = useState(profileDetails);
+    const navigate = useNavigate();
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
-        setEditData(profile);
+        setEditData(profileDetails);
     };
 
     const handleInputChange = (e) => {
@@ -23,14 +29,61 @@ const ViewProfileScreen = () => {
         setEditData({ ...editData, [name]: value });
     };
 
-    const handleSave = () => {
-        setProfile(editData);
-        setIsEditing(false);
+    // const handleSave = () => {
+    //     setProfileDetails(editData);
+    //     setIsEditing(false);
+    // };
+
+    const handleSave = async () => {
+        if (!profileDetails || !editData) {
+            console.error('Profile details or edit data is missing');
+            return;
+        }
+
+        const oldMobileNumber = profileDetails.mobileNumber;
+        const newMobileNumber = editData.mobileNumber;
+
+        if (!oldMobileNumber || !newMobileNumber) {
+            console.error("Mobile number is missing in profile or editData.");
+            return;
+        }
+        try {
+            const updatedFields = {
+                name: editData.name,
+                password: editData.password,
+                completedOrders: profileDetails.completedOrders,
+                organization_id: profileDetails.organizationId
+            };
+
+            if (oldMobileNumber === newMobileNumber) {
+                console.log("1")
+                // Step 1: Create a new document with the updated mobile number as the document ID
+                await setDoc(doc(db, 'users', newMobileNumber), updatedFields);
+            }
+
+            if (oldMobileNumber !== newMobileNumber) {
+                console.log('2')
+                // Step 1: Create a new document with the updated mobile number as the document ID
+                await setDoc(doc(db, 'users', newMobileNumber), updatedFields);
+
+                // Step 2: Delete the old document
+                await deleteDoc(doc(db, 'users', oldMobileNumber));
+
+            }
+            console.log('Profile updated successfully!');
+            setProfileDetails(editData);
+            setIsEditing(false);
+            navigate('/pickers')
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile. Please try again.');
+        }
     };
 
     return (
         <Container>
             <ProfileCard>
+                {console.log('/////', profileDetails)}
                 <Title>Profile Details</Title>
 
                 <Field>
@@ -44,7 +97,7 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profile.name}</Value>
+                            <Value>{profileDetails.name}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -55,12 +108,12 @@ const ViewProfileScreen = () => {
                         {isEditing ? (
                             <Input
                                 type="text"
-                                name="phone"
-                                value={editData.phone}
+                                name="mobileNumber"
+                                value={editData.mobileNumber}
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profile.phone}</Value>
+                            <Value>{profileDetails.mobileNumber}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -76,7 +129,7 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{editData.password}</Value>
+                            <Value>{profileDetails.password}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -100,7 +153,7 @@ const ViewProfileScreen = () => {
                 <Field>
                     <Label>Completed Orders:</Label>
                     <InputOrValue>
-                        <Value>{profile.completedOrders}</Value>
+                        <Value>{profileDetails.completedOrdersCount}</Value>
                     </InputOrValue>
                 </Field>
 
