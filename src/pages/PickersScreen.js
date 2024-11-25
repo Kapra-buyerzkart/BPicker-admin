@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { db } from '../firebase/firebaseConfig';
 import { AdminContext } from '../context/adminContext';
+import { ClipLoader } from 'react-spinners'; // Import the loader
 
 const PickersScreen = () => {
   const [pickersData, setPickersData] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state
-  const { setProfileDetails } = useContext(AdminContext)
+  const { setProfileDetails } = useContext(AdminContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,7 +72,9 @@ const PickersScreen = () => {
       </Header>
 
       {loading ? ( // Show loader while loading
-        <Loader>Loading...</Loader>
+        <Loader>
+          <ClipLoader color="#2575fc" size={50} /> {/* Beautiful spinner */}
+        </Loader>
       ) : (
         <Table>
           <thead>
@@ -160,10 +163,11 @@ const Button = styled.button`
 `;
 
 const Loader = styled.div`
-  margin-top: 20px;
-  font-size: 1.5rem;
-  color: #2575fc;
-  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  height: 50px;
 `;
 
 export default PickersScreen;
