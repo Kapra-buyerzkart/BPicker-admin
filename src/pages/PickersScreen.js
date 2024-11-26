@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { db } from '../firebase/firebaseConfig';
 import { AdminContext } from '../context/adminContext';
-import { ClipLoader } from 'react-spinners'; // Import the loader
+import { ClipLoader } from 'react-spinners';
 
 const PickersScreen = () => {
   const [pickersData, setPickersData] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const { setProfileDetails } = useContext(AdminContext);
   const navigate = useNavigate();
 
@@ -19,23 +19,23 @@ const PickersScreen = () => {
         const querySnapshot = await getDocs(pickersCollection);
 
         const pickers = querySnapshot.docs.map((doc) => {
-          const data = doc.data() || {}; // Ensure data is not null/undefined
-          const completedOrders = data.completedOrders || []; // Fallback to empty array if null/undefined
+          const data = doc.data() || {};
+          const completedOrders = data.completedOrders || [];
 
           const completedOnTime = completedOrders.filter((order) => {
-            const time = order?.completion_time?.split(' ')[0]; // Safely access completion_time
+            const time = order?.completion_time?.split(' ')[0];
             return time && parseInt(time) <= 1;
           }).length;
 
           return {
-            mobileNumber: doc.id || 'Unknown', // Fallback for missing doc ID
-            name: data.name || 'Unnamed Picker', // Fallback for missing name
-            organizationId: data.organization_id || 'N/A', // Fallback for missing organizationId
+            mobileNumber: doc.id || 'Unknown',
+            name: data.name || 'Unnamed Picker',
+            organizationId: data.organization_id || 'N/A',
             completedOnTime,
             completedLate: completedOrders.length - completedOnTime,
             password: data.password,
             completedOrdersCount: data.completedOrders.length,
-            completedOrders: data.completedOrders || []
+            completedOrders: data.completedOrders || [],
           };
         });
 
@@ -59,56 +59,70 @@ const PickersScreen = () => {
       (picker) => picker.mobileNumber === mobileNumber
     );
     if (selectedPicker) {
-      setProfileDetails(selectedPicker); // Update profile details in context
-      navigate('/view-profile'); // Navigate to profile page
+      setProfileDetails(selectedPicker);
+      navigate('/view-profile');
     }
   };
 
   return (
-    <Container>
-      <Header>
-        <h1>Pickers List</h1>
-        <AddButton onClick={addPicker}>ADD A PICKER</AddButton>
-      </Header>
+    <Wrapper>
+      <Container>
+        <Header>
+          <h1>Pickers List</h1>
+          <AddButton onClick={addPicker}>ADD A PICKER</AddButton>
+        </Header>
 
-      {loading ? ( // Show loader while loading
-        <Loader>
-          <ClipLoader color="#2575fc" size={50} /> {/* Beautiful spinner */}
-        </Loader>
-      ) : (
-        <Table>
-          <thead>
-            <tr>
-              <Th>Picker Name</Th>
-              <Th>Orders Completed On Time</Th>
-              <Th>Orders Completed After Delay</Th>
-              <Th>Action</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {pickersData?.map((picker) => (
-              <tr key={picker.mobileNumber || Math.random()}>
-                <Td>{picker.name}</Td>
-                <Td>{picker.completedOnTime ?? 0}</Td>
-                <Td>{picker.completedLate ?? 0}</Td>
-                <Td>
-                  <Button onClick={() => viewProfile(picker.mobileNumber)}>
-                    View Profile
-                  </Button>
-                </Td>
+        {loading ? (
+          <Loader>
+            <ClipLoader color="#2575fc" size={50} />
+          </Loader>
+        ) : (
+          <Table>
+            <thead>
+              <tr>
+                <Th>Picker Name</Th>
+                <Th>Orders Completed On Time</Th>
+                <Th>Orders Completed After Delay</Th>
+                <Th>Action</Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </Container>
+            </thead>
+            <tbody>
+              {pickersData?.map((picker) => (
+                <tr key={picker.mobileNumber || Math.random()}>
+                  <Td>{picker.name}</Td>
+                  <Td>{picker.completedOnTime ?? 0}</Td>
+                  <Td>{picker.completedLate ?? 0}</Td>
+                  <Td>
+                    <Button onClick={() => viewProfile(picker.mobileNumber)}>
+                      View Profile
+                    </Button>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Container>
+    </Wrapper>
   );
 };
 
+const Wrapper = styled.div`
+  min-height: 100vh; /* Ensures the gradient covers the full viewport height */
+  background: linear-gradient(to bottom, #004dcf, #4dcfff); /* Gradient background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 const Container = styled.div`
-  margin: 2rem auto;
   max-width: 800px;
+  width: 100%;
   text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  background: white; /* Card-like effect for the content */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const Header = styled.div`
@@ -118,7 +132,7 @@ const Header = styled.div`
 `;
 
 const AddButton = styled.button`
-  background-color: #28a745;
+  background-color: #228b22;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -139,8 +153,8 @@ const Table = styled.table`
 const Th = styled.th`
   border: 1px solid #ddd;
   padding: 8px;
-  background-color: #2575fc;
-  color: white;
+  background-color: #004dcf;
+  color: #ffffff;
   font-weight: bold;
 `;
 

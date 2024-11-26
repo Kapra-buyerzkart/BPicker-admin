@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaEye, FaEyeSlash } from "react-icons/fa"; // Import icons
-import { AppColors } from "../constants/Colors";
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from "../firebase/firebaseConfig";
 import { useNavigate } from 'react-router-dom';
 
-const Login = ({onLogin}) => {
+const Login = ({ onLogin }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,13 +28,9 @@ const Login = ({onLogin}) => {
         try {
             const adminDoc = await getDoc(doc(db, 'admin', email));
             if (adminDoc.exists()) {
-                console.log('1')
                 const adminData = adminDoc.data();
                 if (adminData.password === password) {
-                    console.log('3')
-                    // localStorage.setItem('isLoggedIn', 'true');
-                    // navigate('/home'); // Navigate to home
-                    onLogin()
+                    onLogin();
                 } else {
                     setError('Incorrect password.');
                 }
@@ -50,68 +44,78 @@ const Login = ({onLogin}) => {
     };
 
     return (
-        <div style={styles.container}>
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit} style={styles.form}>
-                {/* Email Input */}
-                <div style={styles.inputGroup}>
-                    <label htmlFor="email">Email:</label>
-                    <div style={styles.inputContainer}>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            style={styles.input}
-                            placeholder="Enter your email"
-                        />
-                        <FaEnvelope style={styles.icon} />
+        <div style={styles.screenContainer}> {/* Full-screen container with gradient background */}
+            <div style={styles.formContainer}>
+                <h2 style={styles.heading}>Login</h2> {/* Center the Login text */}
+                <form onSubmit={handleSubmit} style={styles.form}>
+                    {/* Email Input */}
+                    <div style={styles.inputGroup}>
+                        <label htmlFor="email">Email:</label>
+                        <div style={styles.inputContainer}>
+                            <input
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                style={styles.input}
+                                placeholder="Enter your email"
+                            />
+                            <FaEnvelope style={styles.icon} />
+                        </div>
                     </div>
-                </div>
 
-                {/* Password Input */}
-                <div style={styles.inputGroup}>
-                    <label htmlFor="password">Password:</label>
-                    <div style={styles.inputContainer}>
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={styles.input}
-                            placeholder="Enter your password"
-                        />
-                        <span
-                            onClick={() => setShowPassword(!showPassword)}
-                            style={styles.icon}
-                            role="button"
-                            aria-label="Toggle Password Visibility"
-                        >
-                            {showPassword ? <FaEye /> : <FaEyeSlash />}
-                        </span>
+                    {/* Password Input */}
+                    <div style={styles.inputGroup}>
+                        <label htmlFor="password">Password:</label>
+                        <div style={styles.inputContainer}>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={styles.input}
+                                placeholder="Enter your password"
+                            />
+                            <span
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={styles.icon}
+                                role="button"
+                                aria-label="Toggle Password Visibility"
+                            >
+                                {showPassword ? <FaEye /> : <FaEyeSlash />}
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                {/* Error Message */}
-                {error && <p style={styles.error}>{error}</p>}
+                    {/* Error Message */}
+                    {error && <p style={styles.error}>{error}</p>}
 
-                <button type="submit" style={styles.button}>
-                    Login
-                </button>
-            </form>
+                    <button type="submit" style={styles.button}>
+                        Login
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
 
 // Styles
 const styles = {
-    container: {
+    screenContainer: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh", // Full height of the viewport
+        background: "linear-gradient(to bottom, #004dcf, #4dcfff)", // Gradient background
+    },
+    formContainer: {
         maxWidth: "400px",
-        margin: "50px auto",
+        width: "90%",
         padding: "20px",
-        border: "1px solid #ccc",
+        backgroundColor: "#fff",
         borderRadius: "8px",
         boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        textAlign: "center", // Center-align text inside the form
     },
     form: {
         display: "flex",
@@ -125,7 +129,6 @@ const styles = {
         alignItems: "center",
         border: "1px solid #ccc",
         borderRadius: "4px",
-        position: "relative",
         padding: "0 10px",
     },
     input: {
@@ -140,8 +143,6 @@ const styles = {
         padding: "10px",
         fontSize: "18px",
         color: "#555",
-        position: "absolute",
-        right: "10px", // Align the icon to the right side
         cursor: "pointer",
     },
     error: {
@@ -150,42 +151,18 @@ const styles = {
         marginBottom: "10px",
     },
     button: {
-        backgroundColor: AppColors.primaryColor,
-        color: AppColors.whiteColor,
+        backgroundColor: "#004dcf",
+        color: "#fff",
         padding: "10px 15px",
         border: "none",
         borderRadius: "4px",
         cursor: "pointer",
         fontSize: "16px",
-        width: "100%", // Ensures button takes full width
+        width: "100%",
     },
-};
-
-// Media Queries for Responsiveness
-const mediaQueries = {
-    '@media (max-width: 768px)': {
-        container: {
-            width: "90%",
-            margin: "20px auto",
-        },
-        form: {
-            padding: "10px",
-        },
-        button: {
-            fontSize: "14px",
-        },
-    },
-    '@media (max-width: 480px)': {
-        container: {
-            width: "95%",
-            padding: "15px",
-        },
-        input: {
-            fontSize: "14px",
-        },
-        button: {
-            fontSize: "14px",
-        },
+    heading: {
+        marginBottom: "20px",
+        color: "#004dcf",
     },
 };
 

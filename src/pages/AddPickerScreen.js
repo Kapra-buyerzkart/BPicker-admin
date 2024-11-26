@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -52,6 +52,20 @@ const AddPickerScreen = () => {
     setOrganizationId('');
     setMobileNumber('');
   };
+
+  // useEffect(() => {
+  //   const handlePopState = () => {
+  //     console.log('Back button pressed');
+  //     navigate(-1);
+  //   };
+
+  //   window.addEventListener('popstate', handlePopState);
+
+  //   return () => {
+  //     window.removeEventListener('popstate', handlePopState);
+  //   };
+  // }, []);
+
 
   return (
     <Container>
@@ -112,7 +126,7 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(to bottom, #6a11cb, #2575fc);
+  background: linear-gradient(to bottom, #004dcf, #4dcfff);
   position: relative;
 `;
 
@@ -162,15 +176,15 @@ const ButtonContainer = styled.div`
 
 const Button = styled.button`
   flex: 1;
-  background: #28a745;
-  color: white;
+  background: #228B22;
+  color: #ffffff;
   border: none;
   padding: 0.75rem;
   border-radius: 4px;
   cursor: pointer;
   margin-right: 0.5rem;
   &:hover {
-    background: #218838;
+    background: #1f6b1f;
   }
   &:disabled {
     background: #ccc;
@@ -180,14 +194,14 @@ const Button = styled.button`
 
 const CancelButton = styled.button`
   flex: 1;
-  background: #ff4d4f;
-  color: white;
+  background: #ea3636;
+  color: #ffffff;
   border: none;
   padding: 0.75rem;
   border-radius: 4px;
   cursor: pointer;
   &:hover {
-    background: #d63031;
+    background: #c82333;
   }
 `;
 

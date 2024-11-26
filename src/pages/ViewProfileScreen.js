@@ -1,38 +1,27 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { AdminContext } from '../context/adminContext';
 import { db } from '../firebase/firebaseConfig';
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
+import { AppColors } from '../constants/Colors';
 
-const ViewProfileScreen = () => {
+const ViewProfileScreen = ({ onLogout }) => {
     const { profileDetails, setProfileDetails } = useContext(AdminContext);
-    const [profile, setProfile] = useState({
-        name: 'John Doe',
-        phone: '123-456-7890',
-        password: 'password123',
-        organizationId: 'ORG001',
-        completedOrders: 15,
-    });
-
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState(profileDetails);
+    const [editData, setEditData] = useState(profileDetails || {});
+    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
     const navigate = useNavigate();
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
-        setEditData(profileDetails);
+        setEditData(profileDetails || {});
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setEditData({ ...editData, [name]: value });
     };
-
-    // const handleSave = () => {
-    //     setProfileDetails(editData);
-    //     setIsEditing(false);
-    // };
 
     const handleSave = async () => {
         if (!profileDetails || !editData) {
@@ -47,6 +36,7 @@ const ViewProfileScreen = () => {
             console.error("Mobile number is missing in profile or editData.");
             return;
         }
+
         try {
             const updatedFields = {
                 name: editData.name,
@@ -56,34 +46,56 @@ const ViewProfileScreen = () => {
             };
 
             if (oldMobileNumber === newMobileNumber) {
-                console.log("1")
-                // Step 1: Create a new document with the updated mobile number as the document ID
                 await setDoc(doc(db, 'users', newMobileNumber), updatedFields);
-            }
-
-            if (oldMobileNumber !== newMobileNumber) {
-                console.log('2')
-                // Step 1: Create a new document with the updated mobile number as the document ID
+            } else {
                 await setDoc(doc(db, 'users', newMobileNumber), updatedFields);
-
-                // Step 2: Delete the old document
                 await deleteDoc(doc(db, 'users', oldMobileNumber));
-
             }
             console.log('Profile updated successfully!');
             setProfileDetails(editData);
             setIsEditing(false);
-            navigate('/pickers')
+            navigate('/pickers');
         } catch (error) {
             console.error('Error updating profile:', error);
             alert('Failed to update profile. Please try again.');
         }
     };
 
+    const handleDelete = async () => {
+        if (!profileDetails || !profileDetails.mobileNumber) {
+            console.error("Profile details or mobile number is missing.");
+            return;
+        }
+
+        try {
+            await deleteDoc(doc(db, 'users', profileDetails.mobileNumber));
+            console.log('Profile deleted successfully!');
+            setProfileDetails(null);
+            setIsModalOpen(false); // Close modal after deletion
+            navigate('/pickers'); // Redirect to login
+        } catch (error) {
+            console.error('Error deleting profile:', error);
+            alert('Failed to delete profile. Please try again.');
+        }
+    };
+
+    // useEffect(() => {
+    //     const handlePopState = () => {
+    //         console.log('Back button pressed');
+    //         navigate(-1);
+    //     };
+
+    //     window.addEventListener('popstate', handlePopState);
+
+    //     return () => {
+    //         window.removeEventListener('popstate', handlePopState);
+    //     };
+    // }, []);
+
+
     return (
         <Container>
             <ProfileCard>
-                {console.log('/////', profileDetails)}
                 <Title>Profile Details</Title>
 
                 <Field>
@@ -97,7 +109,7 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profileDetails.name}</Value>
+                            <Value>{profileDetails?.name}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -113,7 +125,7 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profileDetails.mobileNumber}</Value>
+                            <Value>{profileDetails?.mobileNumber}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -129,31 +141,15 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profileDetails.password}</Value>
+                            <Value>{profileDetails?.password}</Value>
                         )}
                     </InputOrValue>
                 </Field>
 
-                {/* <Field>
-                    <Label>Organization ID:</Label>
-                    <InputOrValue>
-                        {isEditing ? (
-                            <Input
-                                type="text"
-                                name="organizationId"
-                                value={editData.organizationId}
-                                onChange={handleInputChange}
-                            />
-                        ) : (
-                            <Value>{profile.organizationId}</Value>
-                        )}
-                    </InputOrValue>
-                </Field> */}
-
                 <Field>
                     <Label>Completed Orders:</Label>
                     <InputOrValue>
-                        <Value>{profileDetails.completedOrdersCount}</Value>
+                        <Value>{profileDetails?.completedOrdersCount}</Value>
                     </InputOrValue>
                 </Field>
 
@@ -166,22 +162,101 @@ const ViewProfileScreen = () => {
                             <Button onClick={handleEditToggle}>Cancel</Button>
                         </>
                     ) : (
-                        <Button primary onClick={handleEditToggle}>
-                            Edit Profile
-                        </Button>
+                        <>
+                            <Button primary onClick={handleEditToggle}>
+                                Edit Profile
+                            </Button>
+                            <Button
+                                danger
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                Delete Profile
+                            </Button>
+                        </>
                     )}
                 </ButtonContainer>
             </ProfileCard>
+
+            {/* Confirmation Modal */}
+            {isModalOpen && (
+                <ModalOverlay>
+                    <Modal>
+                        <ModalTitle>Confirm Deletion</ModalTitle>
+                        <ModalMessage>
+                            Are you sure you want to delete this profile? This action cannot be undone.
+                        </ModalMessage>
+                        <ModalActions>
+                            <ModalButton onClick={handleDelete} primary>
+                                Yes, Delete
+                            </ModalButton>
+                            <ModalButton onClick={() => setIsModalOpen(false)}>
+                                Cancel
+                            </ModalButton>
+                        </ModalActions>
+                    </Modal>
+                </ModalOverlay>
+            )}
         </Container>
     );
 };
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Modal = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalTitle = styled.h2`
+  margin-bottom: 1rem;
+`;
+
+const ModalMessage = styled.p`
+  margin-bottom: 1.5rem;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+`;
+
+const ModalButton = styled.button`
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  background: ${(props) => (props.primary ? AppColors.red : AppColors.darkGray)};
+  color: #ffffff;
+
+  &:hover {
+    background: ${(props) => (props.primary ? '#c82333' : '#414241')};
+  }
+`;
 
 const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(to bottom, #6a11cb, #2575fc);
+  background: linear-gradient(to bottom, #004dcf, #4dcfff);
 `;
 
 const ProfileCard = styled.div`
@@ -238,19 +313,22 @@ const ButtonContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
+  width: 100%; /* Ensure container uses full width */
 `;
 
 const Button = styled.button`
-  padding: 0.75rem 1.5rem;
+  flex: 1; /* Make all buttons occupy equal width */
+  padding: 0.75rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
-  background: ${(props) => (props.primary ? '#28a745' : '#6c757d')};
+  background: ${(props) => (props.primary ? AppColors.green : AppColors.red)};
   color: white;
+  text-align: center;
 
   &:hover {
-    background: ${(props) => (props.primary ? '#218838' : '#5a6268')};
+    background: ${(props) => (props.primary ? '#1f6b1f' : '#c82333')};
   }
 `;
 
