@@ -50,7 +50,7 @@ const Login = ({ onLogin }) => {
                 <form onSubmit={handleSubmit} style={styles.form}>
                     {/* Email Input */}
                     <div style={styles.inputGroup}>
-                        <label htmlFor="email">Email:</label>
+                        {/* <label htmlFor="email">Email:</label> */}
                         <div style={styles.inputContainer}>
                             <input
                                 type="email"
@@ -66,7 +66,7 @@ const Login = ({ onLogin }) => {
 
                     {/* Password Input */}
                     <div style={styles.inputGroup}>
-                        <label htmlFor="password">Password:</label>
+                        {/* <label htmlFor="password">Password:</label> */}
                         <div style={styles.inputContainer}>
                             <input
                                 type={showPassword ? "text" : "password"}

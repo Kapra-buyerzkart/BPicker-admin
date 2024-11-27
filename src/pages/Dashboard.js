@@ -20,15 +20,12 @@ const Dashboard = ({ onLogout }) => {
       <Cards>
         <Card onClick={() => navigate('/pickers')}>
           <h2>Pickers</h2>
-          <p>Manage your pickers here.</p>
         </Card>
         <Card onClick={() => navigate('/wallet')}>
           <h2>Wallet</h2>
-          <p>View and manage your wallet.</p>
         </Card>
         <Card onClick={() => navigate('/report')}>
           <h2>Report</h2>
-          <p>Generate and view reports.</p>
         </Card>
       </Cards>
 
