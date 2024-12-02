@@ -59,8 +59,9 @@ const PickersScreen = () => {
       (picker) => picker.mobileNumber === mobileNumber
     );
     if (selectedPicker) {
+      // console.log('qqqqqqqqqqqqqq', selectedPicker)
       setProfileDetails(selectedPicker);
-      navigate('/view-profile');
+      navigate('/view-profile', { state: selectedPicker });
     }
   };
 

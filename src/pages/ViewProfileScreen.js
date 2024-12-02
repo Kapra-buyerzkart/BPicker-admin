@@ -1,24 +1,29 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { AdminContext } from '../context/adminContext';
 import { db } from '../firebase/firebaseConfig';
 import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { AppColors } from '../constants/Colors';
+import { useLocation } from "react-router-dom";
 
 const ViewProfileScreen = () => {
+    const location = useLocation();
+
     const { profileDetails, setProfileDetails } = useContext(AdminContext);
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState(profileDetails || {});
+    const [editData, setEditData] = useState(location.state || {});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const navigate = useNavigate();
 
+    // Accessing the state object
+
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
-        setEditData(profileDetails || {});
+        setEditData(location.state || {});
     };
 
     const handleInputChange = (e) => {
@@ -27,12 +32,12 @@ const ViewProfileScreen = () => {
     };
 
     const handleSave = async () => {
-        if (!profileDetails || !editData) {
+        if (!location.state || !editData) {
             console.error('Profile details or edit data is missing');
             return;
         }
 
-        const oldMobileNumber = profileDetails.mobileNumber;
+        const oldMobileNumber = location.state.mobileNumber;
         const newMobileNumber = editData.mobileNumber;
 
         if (!oldMobileNumber || !newMobileNumber) {
@@ -54,8 +59,8 @@ const ViewProfileScreen = () => {
             const updatedFields = {
                 name: editData.name,
                 password: editData.password,
-                completedOrders: profileDetails.completedOrders,
-                organization_id: profileDetails.organizationId,
+                completedOrders: location.state.completedOrders,
+                organization_id: editData.organizationId,
             };
 
             if (oldMobileNumber === newMobileNumber) {
@@ -79,13 +84,13 @@ const ViewProfileScreen = () => {
     };
 
     const handleDelete = async () => {
-        if (!profileDetails || !profileDetails.mobileNumber) {
+        if (!location.state || !location.state.mobileNumber) {
             console.error("Profile details or mobile number is missing.");
             return;
         }
 
         try {
-            await deleteDoc(doc(db, 'users', profileDetails.mobileNumber));
+            await deleteDoc(doc(db, 'users', location.state.mobileNumber));
             setProfileDetails(null);
             setIsDeleteModalOpen(false); // Close delete modal after deletion
             navigate('/pickers'); // Redirect to pickers
@@ -97,24 +102,10 @@ const ViewProfileScreen = () => {
 
     return (
         <Container>
+            {/* {console.log('profileDetails', profileDetails)}
+            {console.log('location.state', location.state)} */}
             <ProfileCard>
                 <Title>Profile Details</Title>
-
-                <Field>
-                    <Label>Name:</Label>
-                    <InputOrValue>
-                        {isEditing ? (
-                            <Input
-                                type="text"
-                                name="name"
-                                value={editData.name}
-                                onChange={handleInputChange}
-                            />
-                        ) : (
-                            <Value>{profileDetails?.name}</Value>
-                        )}
-                    </InputOrValue>
-                </Field>
 
                 <Field>
                     <Label>Phone Number:</Label>
@@ -127,7 +118,23 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profileDetails?.mobileNumber}</Value>
+                            <Value>{location.state?.mobileNumber}</Value>
+                        )}
+                    </InputOrValue>
+                </Field>
+
+                <Field>
+                    <Label>Name:</Label>
+                    <InputOrValue>
+                        {isEditing ? (
+                            <Input
+                                type="text"
+                                name="name"
+                                value={editData.name}
+                                onChange={handleInputChange}
+                            />
+                        ) : (
+                            <Value>{location.state?.name}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -143,7 +150,23 @@ const ViewProfileScreen = () => {
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <Value>{profileDetails?.password}</Value>
+                            <Value>{location.state?.password}</Value>
+                        )}
+                    </InputOrValue>
+                </Field>
+
+                <Field>
+                    <Label>Organization ID:</Label>
+                    <InputOrValue>
+                        {isEditing ? (
+                            <Input
+                                type="number"
+                                name="organizationId"
+                                value={editData.organizationId}
+                                onChange={handleInputChange}
+                            />
+                        ) : (
+                            <Value>{location.state?.organizationId}</Value>
                         )}
                     </InputOrValue>
                 </Field>
@@ -151,7 +174,7 @@ const ViewProfileScreen = () => {
                 <Field>
                     <Label>Completed Orders:</Label>
                     <InputOrValue>
-                        <Value>{profileDetails?.completedOrdersCount}</Value>
+                        <Value>{location.state?.completedOrdersCount}</Value>
                     </InputOrValue>
                 </Field>
 
