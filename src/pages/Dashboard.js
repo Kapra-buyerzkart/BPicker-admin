@@ -27,6 +27,9 @@ const Dashboard = ({ onLogout }) => {
         <Card onClick={() => navigate('/report')}>
           <h2>Report</h2>
         </Card>
+        <Card onClick={() => navigate('/settings')}>
+          <h2>Settings</h2>
+        </Card>
       </Cards>
 
       {isModalOpen && (

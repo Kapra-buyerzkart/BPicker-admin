@@ -7,6 +7,7 @@ import WalletScreen from '../pages/WalletScreen';
 import ReportScreen from '../pages/ReportScreen';
 import AddPickerScreen from '../pages/AddPickerScreen';
 import ViewProfileScreen from '../pages/ViewProfileScreen';
+import SettingsScreen from '../pages/SettingsScreen';
 
 function AppRoutes() {
 
@@ -35,7 +36,8 @@ function AppRoutes() {
                 />
                 <Route path="/pickers" element={<PickersScreen />} />
                 <Route path="/wallet" element={<WalletScreen />} />
-                <Route path="/report" element={<ReportScreen />} />
+                <Route path="/report" element={<ReportScreen />} />\
+                <Route path="/settings" element={<SettingsScreen />} />
                 <Route path="/add-picker" element={<AddPickerScreen />} />
                 <Route path='/view-profile' element={<ViewProfileScreen />} />
             </Routes>

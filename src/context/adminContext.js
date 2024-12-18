@@ -4,13 +4,16 @@ export const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
 
-  const [profileDetails, setProfileDetails] = useState({})
+  const [profileDetails, setProfileDetails] = useState({});
+  const [globalSkipButton, setGlobalSkipButton] = useState(false);
 
   return (
     <AdminContext.Provider
       value={{
         profileDetails,
-        setProfileDetails
+        setProfileDetails,
+        globalSkipButton,
+        setGlobalSkipButton
       }}>
       {children}
     </AdminContext.Provider>
