@@ -45,12 +45,12 @@ const Login = ({ onLogin }) => {
 
     return (
         <div style={styles.screenContainer}> {/* Full-screen container with gradient background */}
+            <h1 style={styles.appName}>BPICKER</h1>
             <div style={styles.formContainer}>
                 <h2 style={styles.heading}>Login</h2> {/* Center the Login text */}
                 <form onSubmit={handleSubmit} style={styles.form}>
                     {/* Email Input */}
                     <div style={styles.inputGroup}>
-                        {/* <label htmlFor="email">Email:</label> */}
                         <div style={styles.inputContainer}>
                             <input
                                 type="email"
@@ -66,7 +66,6 @@ const Login = ({ onLogin }) => {
 
                     {/* Password Input */}
                     <div style={styles.inputGroup}>
-                        {/* <label htmlFor="password">Password:</label> */}
                         <div style={styles.inputContainer}>
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -103,6 +102,7 @@ const Login = ({ onLogin }) => {
 const styles = {
     screenContainer: {
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         height: "100vh", // Full height of the viewport
@@ -116,6 +116,11 @@ const styles = {
         borderRadius: "8px",
         boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
         textAlign: "center", // Center-align text inside the form
+    },
+    appName: {
+        fontSize: "32px",
+        color: "#fff",
+        marginBottom: "20px",
     },
     form: {
         display: "flex",
@@ -137,7 +142,7 @@ const styles = {
         border: "none",
         borderRadius: "4px",
         outline: "none",
-        width: "100%", // Ensures input takes full width
+        width: "100%",
     },
     icon: {
         padding: "10px",

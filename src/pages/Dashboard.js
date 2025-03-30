@@ -30,6 +30,9 @@ const Dashboard = ({ onLogout }) => {
         <Card onClick={() => navigate('/settings')}>
           <h2>Settings</h2>
         </Card>
+        <Card onClick={() => navigate('/organizations')}>
+          <h2>Organizations</h2>
+        </Card>
       </Cards>
 
       {isModalOpen && (
@@ -85,9 +88,17 @@ const LogoutButton = styled.button`
 
 const Cards = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 2rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Card = styled.div`
@@ -101,14 +112,6 @@ const Card = styled.div`
 
   &:hover {
     transform: scale(1.05);
-  }
-
-  h2 {
-    margin: 0 0 0.5rem;
-  }
-
-  p {
-    margin: 0;
   }
 `;
 
@@ -133,17 +136,17 @@ const Modal = styled.div`
   max-width: 400px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  color: #333; /* Ensure text is visible */
+  color: #333;
 `;
 
 const ModalTitle = styled.h2`
   margin-bottom: 1rem;
-  color: #004dcf; /* Add a distinct color for the title */
+  color: #004dcf;
 `;
 
 const ModalMessage = styled.p`
   margin-bottom: 1.5rem;
-  color: #555; /* Add contrast for the message text */
+  color: #555;
 `;
 
 const ModalActions = styled.div`

@@ -8,6 +8,8 @@ import ReportScreen from '../pages/ReportScreen';
 import AddPickerScreen from '../pages/AddPickerScreen';
 import ViewProfileScreen from '../pages/ViewProfileScreen';
 import SettingsScreen from '../pages/SettingsScreen';
+import StackNumbers from '../pages/StackNumbers';
+import Organizations from '../pages/Organizations';
 
 function AppRoutes() {
 
@@ -39,6 +41,8 @@ function AppRoutes() {
                 <Route path="/report" element={<ReportScreen />} />\
                 <Route path="/settings" element={<SettingsScreen />} />
                 <Route path="/add-picker" element={<AddPickerScreen />} />
+                <Route path="/organizations" element={<Organizations />} />
+                <Route path="/stack-numbers/:organizationId" element={<StackNumbers />} />
                 <Route path='/view-profile' element={<ViewProfileScreen />} />
             </Routes>
         </Router>
